@@ -49,3 +49,10 @@ insert into spring.member values ('qwerty','1234','김말년',to_date('78-02-25'
 insert into spring.member values    ('admin','1234','관리자',to_date('90-12-25','rr-mm-dd'),'admin@naver.com','01012345678', default, default);
 
 select * from member;
+
+update 
+    member 
+set 
+    password = '$2a$10$VAr4iXUEnfatGtDGNSG8feg0ZiOyvs5cN0rmYv9HSVVCxOBU2aIiq'
+where
+    member_id = 'leess';
