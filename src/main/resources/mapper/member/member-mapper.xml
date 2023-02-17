@@ -20,6 +20,14 @@
 		)
 	</insert>
 	
-	
+	<select id="selectOneMember" resultMap="memberMap">
+		select
+			*
+		from
+			member
+		where
+			member_id = #{memberId}
+	</select>
+	<resultMap type="member" id="memberMap"></resultMap>
 
 </mapper>

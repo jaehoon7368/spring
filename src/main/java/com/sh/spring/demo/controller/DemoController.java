@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.sh.spring.demo.model.dto.Dev;
@@ -104,22 +105,42 @@ public class DemoController {
 	}
 	
 	@RequestMapping("/dev2.do")
-	public String dev2(
+	public ModelAndView dev2(
 			@RequestParam ("name")String name,
 			@RequestParam (defaultValue = "1")int career, //값생략 또는 변환시 오류가 발생하면 기본값 사용 (String 값만 가능)
 			@RequestParam String email,
 			@RequestParam Gender gender,
 			@RequestParam(required = false) String[] lang, //required = false는 입력해도되고 안해도 될때
-			Model model){
+			ModelAndView mav){
 		// 1.사용자 입력값 처리
 		Dev dev = new Dev(0, name, career, email, gender, lang, LocalDateTime.now());
 		System.out.println("dev = " + dev);
 		
 		// 2. jsp데이터 전달
-		model.addAttribute("dev",dev); //reqeustScope의 속성 저장
+		mav.addObject("dev",dev); //reqeustScope의 속성 저장
 		
-		return "demo/devResult";
+		// 3. view단 설정
+		mav.setViewName("demo/devResult");
+		return mav;
 	}
+	
+//	@RequestMapping("/dev2.do")
+//	public String dev2(
+//			@RequestParam ("name")String name,
+//			@RequestParam (defaultValue = "1")int career, //값생략 또는 변환시 오류가 발생하면 기본값 사용 (String 값만 가능)
+//			@RequestParam String email,
+//			@RequestParam Gender gender,
+//			@RequestParam(required = false) String[] lang, //required = false는 입력해도되고 안해도 될때
+//			Model model){
+//		// 1.사용자 입력값 처리
+//		Dev dev = new Dev(0, name, career, email, gender, lang, LocalDateTime.now());
+//		System.out.println("dev = " + dev);
+//		
+//		// 2. jsp데이터 전달
+//		model.addAttribute("dev",dev); //reqeustScope의 속성 저장
+//		
+//		return "demo/devResult";
+//	}
 	
 	/**
 	 * 커맨드객체 이미 모델 속성으로 등록되어 있다.
