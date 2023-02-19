@@ -29,5 +29,17 @@
 			member_id = #{memberId}
 	</select>
 	<resultMap type="member" id="memberMap"></resultMap>
+	
+	<update id="updateMember">
+		update
+			member
+		set
+			name = #{name},
+			birthday = #{birthday},
+			email = #{email},
+			phone = #{phone}
+		where
+			member_id = #{memberId}
+	</update>
 
 </mapper>

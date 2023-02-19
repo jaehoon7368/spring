@@ -25,12 +25,14 @@ import lombok.extern.slf4j.Slf4j;
  *  - view단에서 사용할 데이터를 임시로 보관하는 Map객체
  *  - viewName에 대한 처리도 포함할 수 있음.
  *  
- *  1. ModelAndView
+ *  1. ModelAndView (일반클래스)
  *   - view단에 대한 정보가지고 있음. View객체 또는 viewName:String 작성가능
  *   - addObject 속성추가
- *  2. ModelMap
+ *   
+ *  2. ModelMap(인터페이스)
  *   - view단 처리 별도.
  *   - addAttribute 속성추가
+ *   
  *  3. Model
  *   - view단 처리 별도.
  *   - addAttribute 속성추가
@@ -146,7 +148,22 @@ public class MemberController {
 	}
 	
 	@GetMapping("/memberDetail.do")
-	public void memberDetail() {
+	public void memberDetail() {}
+	
+	@PostMapping("/memberUpdate.do")
+	public String memberUpdate(Member member, RedirectAttributes redirectAttr, Model model) {
+	
+		int result = memberService.updateMember(member);
 		
+		if(result >0) {
+			model.addAttribute("loginMember", member);
+			redirectAttr.addFlashAttribute("msg", "회원정보를 성공적으로 수정하였습니다.");			
+		}else {
+			redirectAttr.addFlashAttribute("msg", "회원정보 수정이 실패했습니다.");
+		}
+		
+		return "redirect:/member/memberDetail.do";
 	}
+	
+	
 }
