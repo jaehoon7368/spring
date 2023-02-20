@@ -3,9 +3,11 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:beans="http://www.springframework.org/schema/beans"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
 	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
 		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
 	<!-- 기본 namespace는 mvc로 지정했으므로, mvc태그는 namespace생략, 그외 태그는 namespace:tag형식으로 작성해야 한다. -->
 
 	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
@@ -43,6 +45,7 @@
 		</interceptor>
 	</interceptors>
 	
-	
+	<!-- #10.1 aop관련 어노테이션 등록설정 -->
+	<aop:aspectj-autoproxy />
 	
 </beans:beans>

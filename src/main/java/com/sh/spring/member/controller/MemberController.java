@@ -151,12 +151,11 @@ public class MemberController {
 	public void memberDetail() {}
 	
 	@PostMapping("/memberUpdate.do")
-	public String memberUpdate(Member member, RedirectAttributes redirectAttr, Model model) {
+	public String memberUpdate(RedirectAttributes redirectAttr, @ModelAttribute("loginMember")Member member ) {
 	
 		int result = memberService.updateMember(member);
 		
-		if(result >0) {
-			model.addAttribute("loginMember", member);
+		if(result > 0) {
 			redirectAttr.addFlashAttribute("msg", "회원정보를 성공적으로 수정하였습니다.");			
 		}else {
 			redirectAttr.addFlashAttribute("msg", "회원정보 수정이 실패했습니다.");

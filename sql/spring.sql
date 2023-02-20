@@ -56,3 +56,42 @@ set
     password = '$2a$10$VAr4iXUEnfatGtDGNSG8feg0ZiOyvs5cN0rmYv9HSVVCxOBU2aIiq'
 where
     member_id = 'leess';
+    
+    
+--todo테이블 생성
+create table todo(
+    no number,
+    todo varchar2(4000),
+    created_at date default sysdate,
+    completed_at date,
+    constraint pk_todo_no primary key(no)
+);
+create sequence seq_todo_no;
+
+insert into todo values(seq_todo_no.nextval,'에어컨 청소하기',default,null);
+insert into todo values(seq_todo_no.nextval,'형광등 교체하기',default,null);
+insert into todo values(seq_todo_no.nextval,'GoF의 디자인패턴 책읽기',default,null);
+insert into todo values(seq_todo_no.nextval,'장보기',default,null);
+
+select * from todo;
+
+-- 할일완료
+update todo set completed_at = sysdate where no = 4;
+update todo set completed_at = sysdate where no = 2;
+
+-- 할일목록 조회
+-- 할일은 no오름차순, 완료된일은 completed_at 내림차순
+
+--할일목록
+select
+    *
+from(
+    select * from todo where completed_at is null order by no
+)
+union all
+--완료목록
+select
+    *
+from(
+    select * from todo where completed_at is not null order by completed_at desc
+);
