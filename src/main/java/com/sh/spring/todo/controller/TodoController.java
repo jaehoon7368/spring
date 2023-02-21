@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.sh.spring.todo.model.dto.Todo;
@@ -34,11 +35,14 @@ public class TodoController {
 	private TodoService todoService;
 	
 	@GetMapping("/todoList.do")
-	public void todoList(Model model) {
+	public ModelAndView todoList(ModelAndView mav) {
 		log.debug("todoService = {}",todoService.getClass());
 		List<Todo> todoList = todoService.todoList();
 		log.debug("todoList = " + todoList);
-		model.addAttribute("todoList", todoList);
+		mav.addObject("todoList", todoList);
+		mav.setViewName("todo/todoList");
+		
+		return mav;
 	}
 	
 	/**

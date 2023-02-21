@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sh.spring.board.model.dao.BoardDao">
+
+	<select id="selectAllBoard" resultMap="boardMap">
+		select
+   			 b.*,		
+    		(select count(renamed_filename) from attachment where board_no = b.no) attach_count
+		from
+   			 board b 
+		order by
+   			 no desc
+	</select>
+	<resultMap type="board" id="boardMap"></resultMap>
+	
+	<insert id="insertBoard">
+		insert into
+			spring.board
+		values(
+			seq_board_no.nextval,
+			#{title},
+			#{memberId},
+			#{content},
+			default,
+			default
+			)
+		<selectKey order="AFTER" resultType="_int" keyProperty="no">
+			select
+				seq_board_no.currval
+			from
+				dual
+		</selectKey>
+	</insert>
+		
+	<insert id="insertAttachment">
+		insert into
+			attachment
+		values(
+			seq_attachment_no.nextval,
+			#{boardNo},
+			#{originalFilename},
+			#{renamedFilename},
+			default,
+			default
+		)
+	</insert>
+</mapper>
