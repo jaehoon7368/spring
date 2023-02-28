@@ -1,9 +1,25 @@
 package com.sh.spring.member.controller;
 
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -11,6 +27,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -66,13 +84,13 @@ public class MemberController {
 	 * @param model
 	 * @return
 	 */
-	@ModelAttribute("common")
-	public ModelMap common(ModelMap model) {
-		log.debug("MemberController#common 호출됨!");
-		model.addAttribute("email", "admin@shqke1.com");
-		model.addAttribute("tel", "070-123-4567");
-		return model;
-	}
+//	@ModelAttribute("common")
+//	public ModelMap common(ModelMap model) {
+//		log.debug("MemberController#common 호출됨!");
+//		model.addAttribute("email", "admin@shqke1.com");
+//		model.addAttribute("tel", "070-123-4567");
+//		return model;
+//	}
 	
 	/**
 	 * $2a$10$.85gA9ynsfoJdMM/JWdZxOrfQDW6Q.NDB6e9YlcNURWL5k552uyi2
@@ -108,27 +126,43 @@ public class MemberController {
 		return "member/memberLogin";
 	}
 	
-	@PostMapping("/memberLogin.do")
-	public String memberLogin(String memberId,String password, Model model, RedirectAttributes redirectAttr) {
-		log.debug("memberId = {}" , memberId);
-		log.debug("password = {}" , password);
+//	@PostMapping("/memberLogin.do")
+//	public String memberLogin(String memberId,String password, Model model, RedirectAttributes redirectAttr) {
+//		log.debug("memberId = {}" , memberId);
+//		log.debug("password = {}" , password);
+//		
+//		log.debug(passwordEncoder.encode(password));
+//		
+//		// 회원한명 조회
+//		Member member = memberService.selectOneMember(memberId);
+//		log.debug("member = {}" , member);
+//		// 인증
+//		// 1. 로그인 성공한 경우
+//		if(member != null && passwordEncoder.matches(password, member.getPassword())) {
+//			model.addAttribute("loginMember", member); //requestScope -> sessionScope
+//		}
+//		// 2. 로그인 실패한 경우(아이디/비번 불일치)
+//		else {
+//			redirectAttr.addFlashAttribute("msg", "사용자 아이디 또는 비밀번호가 일치하지 않습니다.");
+//		}
+//		
+//		return "redirect:/";
+//	}
+	
+	@PostMapping("/LoginSuccess.do")
+	public String loginSuccess(HttpSession session) {
+		log.debug("loginSuccess 핸들러 호출!");
+		// 필요한 로그인 후처리
+		String location = "/";
 		
-		log.debug(passwordEncoder.encode(password));
+		// 시큐어리티가 지정한 리다이렉트 url 가져오기
+		SavedRequest savedRequest = (SavedRequest)session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+		if(savedRequest != null)
+				location = savedRequest.getRedirectUrl();
 		
-		// 회원한명 조회
-		Member member = memberService.selectOneMember(memberId);
-		log.debug("member = {}" , member);
-		// 인증
-		// 1. 로그인 성공한 경우
-		if(member != null && passwordEncoder.matches(password, member.getPassword())) {
-			model.addAttribute("loginMember", member); //requestScope -> sessionScope
-		}
-		// 2. 로그인 실패한 경우(아이디/비번 불일치)
-		else {
-			redirectAttr.addFlashAttribute("msg", "사용자 아이디 또는 비밀번호가 일치하지 않습니다.");
-		}
+		log.debug("location = {}",location);
 		
-		return "redirect:/";
+		return "redirect:" + location;
 	}
 	
 	/**
@@ -147,22 +181,115 @@ public class MemberController {
 		return "redirect:/";
 	}
 	
+	/**
+	 * security 인증객체 가져오기
+	 */
 	@GetMapping("/memberDetail.do")
-	public void memberDetail() {}
+	public void memberDetail(Authentication authentication) {
+//		Authentication authenticagtion = SecurityContextHolder.getContext().getAuthentication();
+		log.debug("authentication = {}",authentication);
+		Member principal = (Member) authentication.getPrincipal();
+		List<SimpleGrantedAuthority> authenities = (List<SimpleGrantedAuthority>)authentication.getAuthorities();
+	}
 	
 	@PostMapping("/memberUpdate.do")
-	public String memberUpdate(RedirectAttributes redirectAttr, @ModelAttribute("loginMember")Member member ) {
-	
+	public String memberUpdate(Member member,Authentication authentication) {
+		log.debug("member = {}",member);
+		// 1.db 변경
 		int result = memberService.updateMember(member);
-		
-		if(result > 0) {
-			redirectAttr.addFlashAttribute("msg", "회원정보를 성공적으로 수정하였습니다.");			
-		}else {
-			redirectAttr.addFlashAttribute("msg", "회원정보 수정이 실패했습니다.");
-		}
+		// 2. security context의 인증객체 갱신
+		Member newMember = memberService.selectOneMember(member.getMemberId());
+//		Member newMember = member;
+		Authentication newAuthenticaiton = new UsernamePasswordAuthenticationToken(
+				newMember,
+				authentication.getCredentials(),
+				authentication.getAuthorities()
+			);
+		SecurityContextHolder.getContext().setAuthentication(newAuthenticaiton);
 		
 		return "redirect:/member/memberDetail.do";
 	}
 	
+//	@PostMapping("/memberUpdate.do")
+//	public String memberUpdate(RedirectAttributes redirectAttr, @ModelAttribute("loginMember")Member member ) {
+//	
+//		int result = memberService.updateMember(member);
+//		
+//		if(result > 0) {
+//			redirectAttr.addFlashAttribute("msg", "회원정보를 성공적으로 수정하였습니다.");			
+//		}else {
+//			redirectAttr.addFlashAttribute("msg", "회원정보 수정이 실패했습니다.");
+//		}
+//		
+//		return "redirect:/member/memberDetail.do";
+//	}
 	
+	/**
+	 * spring에서 json응답하기
+	 * 1. jsonView빈 - model에 담긴 데이터를 json형식으로 변환후 응답메세지에 출력
+	 * 2. @ResponseBody - Handler에서 반환된 map객체(dto)를 MessageConvertoer빈이 json변환후 응답메세지에 출력
+	 * 3. ResponseEntity - @ResponseBody기능포함. 응답 staus code, 응답헤더, 응답메세지바디를 직접 작성하는 객체
+	 * 						(MessageConvertoer빈이 json변환후) 
+	 * 
+	 * @param memberId
+	 * @return
+	 */
+	@GetMapping("/checkIdDuplicate.do")
+	public String checkIdDuplicate(@RequestParam String memberId, Model model) {
+		log.debug("memberId = {}",memberId);
+		Member member = memberService.selectOneMember(memberId);
+		boolean available = member == null;
+		
+		model.addAttribute("memberId", memberId);
+		model.addAttribute("available", available);
+		
+		return "jsonView";
+	}
+	
+	@ResponseBody
+	@GetMapping("/checkIdDuplicate2.do")
+	public Map<String,Object> checkIdDuplicate2(@RequestParam String memberId) {
+		Map<String,Object> map = new HashMap<>();
+		Member member = memberService.selectOneMember(memberId);
+		boolean available = member == null;
+		
+		map.put("memberId",memberId);
+		map.put("available", available);
+		
+		return map;
+	}
+	
+	/**
+	 * - 응답코드
+	 * - 응답헤더설정
+	 * - 응답메세지바디
+	 * 
+	 * ResponseEntity 객체생성
+	 * 1. new 연산자
+	 * 2. builder 패텅
+	 *  
+	 * @param memberId
+	 * @return
+	 */
+	@GetMapping("/checkIdDuplicate3.do")
+	public ResponseEntity<Map<String,Object>> checkIdDuplicate3(@RequestParam String memberId) {
+		Map<String,Object> map = new HashMap<>();
+		Member member = memberService.selectOneMember(memberId);
+		boolean available = member == null;
+		map.put("memberId",memberId);
+		map.put("available", available);
+		map.put("hello", "world");
+		
+		
+		
+//		return ResponseEntity.ok(map); //200
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		
+		return ResponseEntity
+				.status(HttpStatus.OK)
+				.headers(headers)
+//				.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
+				.body(map);
+	}
 }

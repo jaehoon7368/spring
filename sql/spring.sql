@@ -203,4 +203,36 @@ COMMIT;
 select * from board;
 select * from attachment;
 
+-- 게시글 한건조회(join)
+-- board(1) - attachment(n)
+select
+    b.*,
+    a.*,
+    a.no attach_no,
+    m.*
+from
+    board b left join attachment a
+    on b.no = a.board_no
+    left join member m
+    on b.member_id = m.member_id
+where
+    b.no = 64;
     
+select * from member;
+
+--권한테이블 생성
+create table authority(
+    member_id varchar2(20),
+    auth varchar2(50),
+    constraint pk_authority primary key(member_id,auth),
+    constraint fk_authority_member_id foreign key(member_id)
+                        references member(member_id)
+                        on delete cascade
+);
+
+insert into authority values('leess','ROLE_USER');
+insert into authority values('admin','ROLE_ADMIN');
+
+--security가 원하는 사용자 조회
+select * from member where member_id ='honggd';
+select * from authority where member_id ='honggd';

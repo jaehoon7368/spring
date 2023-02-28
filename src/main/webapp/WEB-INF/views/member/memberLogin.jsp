@@ -3,6 +3,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -48,10 +50,18 @@ window.addEventListener('load',()=>{
 				</div>
 				<!--로그인폼 -->
 				<!-- https://getbootstrap.com/docs/4.1/components/forms/#overview -->
-				<form
+				<form:form
 					action="${pageContext.request.contextPath}/member/memberLogin.do"
 					method="post">
 					<div class="modal-body">
+						<c:if test="${param.error != null}">
+							<div class="alert alert-danger alert-dismissible fade show" role="alert">
+				              <span class="text-danger">아이디 또는 비밀번호가 일치하지 않습니다.</span>
+				              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+				                <span aria-hidden="true">&times;</span>
+				              </button>
+				            </div>
+						</c:if>
 						<input 
 							type="text" class="form-control" name="memberId"
 							placeholder="아이디" required> 
@@ -64,7 +74,7 @@ window.addEventListener('load',()=>{
 						<button type="submit" class="btn btn-outline-success">로그인</button>
 						<button type="button" class="btn btn-outline-success" data-dismiss="modal">취소</button>
 					</div>
-				</form>
+				</form:form>
 			</div>
 		</div>
 	</div>

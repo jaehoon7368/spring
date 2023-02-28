@@ -46,4 +46,69 @@
 			default
 		)
 	</insert>
+	
+	<select id="selectOneBoard" resultMap="boardMap">
+		select
+			*
+		from
+			board
+		where
+			no = #{no}
+	</select>
+	
+	<select id="selectOneAttachmentList" resultMap="attachMap">
+		select
+			*
+		from
+			attachment
+		where
+			board_no = #{no}
+	</select>
+	
+	<resultMap type="attachment" id="attachMap"></resultMap>
+	
+	<select id="selectOneBoardCollection" resultMap="boardCollectionMap">
+		select
+		    b.*,
+		    a.*,
+		    a.no attach_no,
+		    m.*
+		from
+		    board b left join attachment a
+		    on b.no = a.board_no
+		    left join member m
+		    on b.member_id = m.member_id
+		where
+		    b.no = #{no}
+	</select>
+	<!-- collection, association 태그 사용시에는 id/result태그를 생략할 수 없다. -->
+	<resultMap type="board" id="boardCollectionMap">
+		<id column="no" property="no"/>
+		<result column="title" property="title"/>
+		<result column="member_id" property="memberId"/>
+		<result column="content" property="content"/>
+		<result column="created_at" property="createdAt"/>
+		<result column="read_count" property="readCount"/>
+		<association property="member" javaType="member">
+			<id column="member_id" property="memberId"/>
+			<result column="name" property="name"/>
+		</association>
+		<collection property="attachments" ofType="attachment">
+			<id column="attach_no" property="no"/>
+			<result column="original_filename" property="originalFilename"/>
+			<result column="renamed_filename" property="renamedFilename"/>
+			<result column="created_at" property="createdAt"/>
+			<result column="download_count" property="downloadCount"/>
+		</collection>
+	</resultMap>
+	
+	<select id="selectOneAttachment" resultMap="attachMap">
+		select
+			*
+		from
+			attachment
+		where
+			no = #{no}
+	</select>
+	
 </mapper>

@@ -9,6 +9,7 @@
 <style>
 /*글쓰기버튼*/
 input#btn-add{float:right; margin: 0 0 15px;}
+tr[data-no] {cursor:pointer;}
 </style>
 <section id="board-container" class="container">
 	<input type="button" value="글쓰기" id="btn-add" class="btn btn-outline-success"/>
@@ -25,7 +26,7 @@ input#btn-add{float:right; margin: 0 0 15px;}
 		</thead>
 		<tbody>
 			<c:forEach items="${boardList }" var="board">
-			<tr>
+			<tr data-no="${board.no }">
 				<td>${board.no }</td>
 				<td>${board.title }</td>
 				<td>${board.memberId}</td>
@@ -45,6 +46,15 @@ input#btn-add{float:right; margin: 0 0 15px;}
 	</table>
 </section> 
 <script>
+document.querySelectorAll("tr[data-no]").forEach((tr) =>{
+		tr.addEventListener('click',(e)=>{
+			/* console.log(e.target,tr); */
+			const no = tr.dataset.no;
+			console.log(no);
+			location.href = '${pageContext.request.contextPath}/board/boardDetail.do?no=' +no;
+		});
+});
+
 document.querySelector("#btn-add").addEventListener('click',(e) =>{
 		location.href = '${pageContext.request.contextPath}/board/boardForm.do';
 });
