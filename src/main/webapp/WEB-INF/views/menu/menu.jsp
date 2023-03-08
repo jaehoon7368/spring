@@ -268,9 +268,15 @@
 			});
 			console.log(JSON.stringify(menu));
 			
+			 const csrfHeader = "${_csrf.headerName}";
+             const csrfToken = "${_csrf.token}";
+             const headers = {};
+             headers[csrfHeader] = csrfToken;
+			
 			$.ajax({
-				url : MENU_URL,
-				method : "PUT",
+				url : '${pageContext.request.contextPath}/menu/updateMenu.do',
+				method : "POST",
+				headers,
 				data : JSON.stringify(menu),
 				contentType : 'application/json; charset=utf-8',
 				success(data){
@@ -293,10 +299,17 @@
 	    <script>
 	    document.menuDeleteFrm.addEventListener('submit',(e)=>{
 	    	e.preventDefault();
+	    	
+	    	const csrfHeader = "${_csrf.headerName}";
+            const csrfToken = "${_csrf.token}";
+            const headers = {};
+            headers[csrfHeader] = csrfToken;
 	    		
 	    	$.ajax({
-	    		url : ${MENU_URL}/\${e.target.id.value}`,
-	    		method : "DELETE",
+	    		url : `${pageContext.request.contextPath}/menu/deleteMenu.do`,
+	    		data : {id: e.target.id.value},
+	    		method : "POST",
+	    		headers,
 	    		success(data){
 	    			console.log(data); 
 	    		},
@@ -311,7 +324,8 @@ const findById = (id) =>{
 	console.log(id);
 	
 	$.ajax({
-		url : `\${MENU_URL}/\${id}`,
+		url : '${pageContext.request.contextPath}/menu/findMenu.do',
+		data : {id},
 		method : "GET",
 		success(data){
 			console.log(data);

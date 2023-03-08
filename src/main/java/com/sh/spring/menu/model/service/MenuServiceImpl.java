@@ -42,6 +42,11 @@ public class MenuServiceImpl implements MenuService {
 	}
 	
 	@Override
+	public ResponseEntity<?> findMenu(long id) {
+		return new RestTemplate().exchange(MENU_URL + "/" + id, HttpMethod.GET, null, Map.class);
+	}
+	
+	@Override
     public ResponseEntity<?> enrollMenu(Map<String, Object> menu) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
@@ -58,4 +63,24 @@ public class MenuServiceImpl implements MenuService {
         HttpEntity request = new HttpEntity(json, headers);
         return restTemplate.exchange(MENU_URL, HttpMethod.POST, request, Map.class);
     } // enrollMenu() end
+	
+	@Override
+	public ResponseEntity<?> updateMenu(Map<String, Object> menu) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		ObjectMapper om = new ObjectMapper();
+		String body = null;
+		try {
+			body = om.writeValueAsString(menu);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		HttpEntity<?> requestEntity = new HttpEntity<>(body,headers);
+		return new RestTemplate().exchange(MENU_URL, HttpMethod.PUT, requestEntity ,Map.class);
+	}
+	
+	@Override
+	public ResponseEntity<?> deleteMenu(long id) {
+		return new RestTemplate().exchange(MENU_URL + "/" + id, HttpMethod.DELETE, null, Map.class);
+	}
 }

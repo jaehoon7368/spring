@@ -60,6 +60,7 @@
 				    </li>
 				    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/todo/todoList.do">Todo</a></li>
 				    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/menu/menu.do">Menu</a></li>
+				     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/publicData/publicData.do">공공데이터</a></li>
 				    <sec:authorize access="hasRole('ROLE_ADMIN')">
 				     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/admin/admin.do">관리자</a></li>
 				     </sec:authorize>
