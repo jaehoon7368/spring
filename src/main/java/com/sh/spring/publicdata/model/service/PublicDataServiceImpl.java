@@ -13,6 +13,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
@@ -29,18 +31,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.sh.spring.publicdata.airpollution.domain.Response;
+import com.sh.spring.publicdata.airpollution.domain.Wrapper;
 import com.sh.spring.publicdata.course.domain.Course;
 import com.sh.spring.publicdata.course.domain.Student;
+import com.sh.spring.publicdata.police.domian.Police;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@PropertySource("classpath:conf.properties")
 public class PublicDataServiceImpl implements PublicDataService {
 
-	public static final String XML_COURSE_URL = "https://shqkel.github.io/course.xml";
-	public static final String AIRPOLLUTION_URL = "https://api.odcloud.kr/api/RltmArpltnInforInqireSvrc/v1/getCtprvnRltmMesureDnsty";
-	public static final String AIRPOLLUTION_SERVICE_KEY = "4hJcvIAdbdbIuivwddYDiWkY2YR+DYF+SZfVPTGRMB7vswenI/vOBKLGOCJedAUXXhR14LiKx2QmyKAuBBZXSg==";
+//	public static final String XML_COURSE_URL = "https://shqkel.github.io/course.xml";
+//	public static final String JSON_COURSE_URL = "https://shqkel.github.io/course.json";
+//	public static final String AIRPOLLUTION_URL = "https://api.odcloud.kr/api/RltmArpltnInforInqireSvrc/v1/getCtprvnRltmMesureDnsty";
+//	public static final String AIRPOLLUTION_SERVICE_KEY = "4hJcvIAdbdbIuivwddYDiWkY2YR+DYF+SZfVPTGRMB7vswenI/vOBKLGOCJedAUXXhR14LiKx2QmyKAuBBZXSg==";
+	
+	@Value("${XML_COURSE_URL}")
+	public String XML_COURSE_URL;
+	@Value("${JSON_COURSE_URL}")
+	public String JSON_COURSE_URL;
+	@Value("${AIRPOLLUTION_URL}")
+	public String AIRPOLLUTION_URL;
+	@Value("${AIRPOLLUTION_SERVICE_KEY}")
+	public String AIRPOLLUTION_SERVICE_KEY;
+	@Value("${POLICY_URL}")
+	public String POLICY_URL;
+	@Value("${POLICY_SERVICE_KEY}")
+	public String POLICY_SERVICE_KEY;
 	
 	@Autowired
 	private ResourceLoader resourceLoader;
@@ -99,41 +118,31 @@ public class PublicDataServiceImpl implements PublicDataService {
 	
 	@Override
 	public ResponseEntity<?> getXmlCourseWithObjectMapper() {
+		return ResponseEntity.ok(readValue(XML_COURSE_URL, Course.class)); //contentType xml생략가능 (jackson-dataformat-xml 의존)
+	}
+	
+	/**
+	 * 제네릭클래스
+	 *  - 클래스레벨에서 타입변수를 선언하고, 객체 생성시점에 타입을 결정
+	 *  - List<String> list = new ArrayList<>();
+	 * 
+	 * 제네릭메소드
+	 *  - 메소드레벨에서 타입변수를 선언하고, 메소드 호출시점에 타입을 결정
+	 *  - readValue("http://~", Course.class);
+	 */
+	public <T> T readValue(String url, Class<T> clazz) {
 		ObjectMapper om = new XmlMapper().registerModule(new JavaTimeModule()); //time 패키지 사용하는 경우
-		Course course = null;
+		T result = null;
 		try {
-			course = om.readValue(new URL(XML_COURSE_URL),Course.class);
+			result = om.readValue(new URL(url),clazz);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return ResponseEntity.ok(course); //contentType xml생략가능 (jackson-dataformat-xml 의존)
+		return result; 
 	}
 	
 	@Override
-	public ResponseEntity<?> getXmlAirpollutionWirhObjectMapper() {
-		ObjectMapper om = new XmlMapper();
-		Response response = null;
-		String url = AIRPOLLUTION_URL;
-		try {
-			url += "?sidoName=" + URLEncoder.encode("서울", "utf-8");
-			url += "&serviceKey=" + URLEncoder.encode(AIRPOLLUTION_SERVICE_KEY, "utf-8");
-			log.debug("url = {}",url);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			response = om.readValue(new URL(url), Response.class);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return ResponseEntity.ok(response);
-	}
-	
-	@Override
-	public ResponseEntity<?> getXmlAirpollutionWithObjectMapperChange(String sidoName) {
-		ObjectMapper om = new XmlMapper();
-		Response response = null;
+	public ResponseEntity<?> getXmlAirpollutionWirhObjectMapper(String sidoName) {
 		String url = AIRPOLLUTION_URL;
 		try {
 			url += "?sidoName=" + URLEncoder.encode(sidoName, "utf-8");
@@ -142,12 +151,62 @@ public class PublicDataServiceImpl implements PublicDataService {
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-		
+		return ResponseEntity.ok(readValue(url,Response.class));
+	}
+	
+	@Override
+	public Resource getJsonCourseAsResource() {
+		return resourceLoader.getResource(JSON_COURSE_URL);
+	}
+	
+	@Override
+	public Object getJsonCourseWithObjectMapper() {
+		ObjectMapper om = new ObjectMapper().registerModule(new JavaTimeModule());
+		Course course = null;
 		try {
-			response = om.readValue(new URL(url), Response.class);
+			course = om.readValue(new URL(JSON_COURSE_URL), Course.class);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return ResponseEntity.ok(response);
+		return course;
+	}
+	
+	@Override
+	public Object getJsonAirpollutionWirhObjectMapper(String sidoName) {
+		String url = AIRPOLLUTION_URL;
+		try {
+			url += "?sidoName=" + URLEncoder.encode(sidoName,"utf-8");
+			url += "&serviceKey=" + URLEncoder.encode(AIRPOLLUTION_SERVICE_KEY,"utf-8");
+			url += "&returnType=json"; 
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
+		ObjectMapper om = new ObjectMapper().registerModule(new JavaTimeModule());
+		Wrapper wrapper = null;
+		try {
+			wrapper = om.readValue(new URL(url), Wrapper.class); //{"header":.., "body":..}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return wrapper;
+	}
+	
+	@Override
+	public Object getJsonPolicyWithObjectMapper() {
+		String url = POLICY_URL;
+		try {
+			url += "?page=1&perPage=10";
+			url += "&serviceKey=" + URLEncoder.encode(POLICY_SERVICE_KEY,"utf-8");
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
+		ObjectMapper om = new ObjectMapper();
+		Police police = null;
+		try {
+			police = om.readValue(new URL(url), Police.class); //{"header":.., "body":..}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return police;
 	}
 }

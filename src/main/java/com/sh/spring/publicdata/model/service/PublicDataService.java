@@ -1,5 +1,6 @@
 package com.sh.spring.publicdata.model.service;
 
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
 public interface PublicDataService {
@@ -10,8 +11,15 @@ public interface PublicDataService {
 
 	ResponseEntity<?> getXmlCourseWithObjectMapper();
 
-	ResponseEntity<?> getXmlAirpollutionWirhObjectMapper();
+	ResponseEntity<?> getXmlAirpollutionWirhObjectMapper(String sidoName);
 
-	ResponseEntity<?> getXmlAirpollutionWithObjectMapperChange(String sidoName);
+	Resource getJsonCourseAsResource();
+
+	Object getJsonCourseWithObjectMapper();
+
+	Object getJsonAirpollutionWirhObjectMapper(String sidoName);
+
+	Object getJsonPolicyWithObjectMapper();
+
 
 }

@@ -1,6 +1,8 @@
 package com.sh.spring.publicdata.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,13 +37,31 @@ public class PublicDataController {
 		return publicDataService.getXmlCourseWithObjectMapper();
 	}
 	
-	@GetMapping("/xml/airpollution.do")
-	public ResponseEntity<?> xmlAirpollution(){
-		return publicDataService.getXmlAirpollutionWirhObjectMapper();
+	@GetMapping("/json/course.do")
+	public ResponseEntity<?>  jsonCourse(){
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+//				.body(publicDataService.getJsonCourseAsResource());
+				.body(publicDataService.getJsonCourseWithObjectMapper());
 	}
 	
-	@GetMapping("/xml/airpollutionChange.do")
-	public ResponseEntity<?> xmlAirpollutionChange(@RequestParam String sidoName){
-		return publicDataService.getXmlAirpollutionWithObjectMapperChange(sidoName);
+	@GetMapping("/xml/airpollution.do")
+	public ResponseEntity<?> xmlAirpollution(@RequestParam String sidoName){
+		return publicDataService.getXmlAirpollutionWirhObjectMapper(sidoName);
 	}
+	
+	@GetMapping("/json/airpollution.do")
+	public ResponseEntity<?> jsonAirpollution(@RequestParam(defaultValue = "서울") String sidoName){
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_TYPE,MediaType.APPLICATION_JSON.toString())
+				.body(publicDataService.getJsonAirpollutionWirhObjectMapper(sidoName));
+	}
+	
+	@GetMapping("/json/policy.do")
+	public ResponseEntity<?> jsonPolicy(){
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+				.body(publicDataService.getJsonPolicyWithObjectMapper());
+	}
+	
 }
